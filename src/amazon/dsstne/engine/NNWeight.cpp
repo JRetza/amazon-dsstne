@@ -11,6 +11,7 @@
  */
 
 #include "GpuTypes.h"
+#include "NcExcptionWrap.h"
 #include "NNTypes.h"
 #include "kernels.h"
 #define __STDC_FORMAT_MACROS
@@ -97,21 +98,21 @@ bool LoadNNWeightDescriptorNetCDF(const string& fname, netCDF::NcFile& nc, uint3
             NcGroupAtt inputLayerAtt            = nc.getAtt(wstring + "inputLayer");
             if (inputLayerAtt.isNull())
             {
-                throw NcException("NcException", "No input layer supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No input layer supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             inputLayerAtt.getValues(wd._inputLayer);  
 
             NcGroupAtt outputLayerAtt           = nc.getAtt(wstring + "outputLayer");
             if (outputLayerAtt.isNull())
             {
-                throw NcException("NcException", "No output layer supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No output layer supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             outputLayerAtt.getValues(wd._outputLayer);
 
             NcGroupAtt normAtt                  = nc.getAtt(wstring + "norm");
             if (normAtt.isNull())
             {
-                //throw NcException("NcException", "No norm supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                //throw NC_EXCEPTION("NcException", "No norm supplied in NetCDF input file " + fname, __FILE__, __LINE__);
                 wd._norm                        = (NNFloat)0.0;
             }
             else
@@ -120,7 +121,7 @@ bool LoadNNWeightDescriptorNetCDF(const string& fname, netCDF::NcFile& nc, uint3
             NcGroupAtt bSharedAtt               = nc.getAtt(wstring + "bShared");
             if (bSharedAtt.isNull())
             {
-                throw NcException("NcException", "No bShared supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No bShared supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             uint32_t bShared;
             bSharedAtt.getValues(&bShared);
@@ -132,19 +133,19 @@ bool LoadNNWeightDescriptorNetCDF(const string& fname, netCDF::NcFile& nc, uint3
                 NcGroupAtt sourceInputLayerAtt  = nc.getAtt(wstring + "sourceInputLayer");
                 if (sourceInputLayerAtt.isNull())
                 {
-                    throw NcException("NcException", "No sourceInputLayer for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                    throw NC_EXCEPTION("NcException", "No sourceInputLayer for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
                 }
                 sourceInputLayerAtt.getValues(wd._sourceInputLayer);
                 NcGroupAtt sourceOutputLayerAtt = nc.getAtt(wstring + "sourceOutputLayer");
                 if (sourceInputLayerAtt.isNull())
                 {
-                    throw NcException("NcException", "No sourceOutputLayer for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                    throw NC_EXCEPTION("NcException", "No sourceOutputLayer for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
                 }
                 sourceOutputLayerAtt.getValues(wd._sourceOutputLayer);
                 NcGroupAtt bTransposedAtt       = nc.getAtt(wstring + "bTransposed");
                 if (bTransposedAtt.isNull())
                 {
-                    throw NcException("NcException", "No bTransposed for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                    throw NC_EXCEPTION("NcException", "No bTransposed for shared weights supplied in NetCDF input file " + fname, __FILE__, __LINE__);
                 }
                 uint32_t bTransposed;
                 bTransposedAtt.getValues(&bTransposed);
@@ -166,35 +167,35 @@ bool LoadNNWeightDescriptorNetCDF(const string& fname, netCDF::NcFile& nc, uint3
             NcGroupAtt widthAtt                 = nc.getAtt(wstring + "width");
             if (widthAtt.isNull())
             {
-                throw NcException("NcException", "No weight width supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No weight width supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             widthAtt.getValues(&wd._width);
 
             NcGroupAtt heightAtt                = nc.getAtt(wstring + "height");
             if (heightAtt.isNull())
             {
-                throw NcException("NcException", "No weight height supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No weight height supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             heightAtt.getValues(&wd._height);
 
             NcGroupAtt lengthAtt                = nc.getAtt(wstring + "length");
             if (lengthAtt.isNull())
             {
-                throw NcException("NcException", "No weight length supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No weight length supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             lengthAtt.getValues(&wd._length);
             
             NcGroupAtt depthAtt                 = nc.getAtt(wstring + "depth");
             if (depthAtt.isNull())
             {
-                throw NcException("NcException", "No weight depth supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No weight depth supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             depthAtt.getValues(&wd._depth);
             
             NcGroupAtt breadthAtt               = nc.getAtt(wstring + "breadth");
             if (breadthAtt.isNull())
             {
-                throw NcException("NcException", "No weight breadth supplied in NetCDF input file " + fname, __FILE__, __LINE__);
+                throw NC_EXCEPTION("NcException", "No weight breadth supplied in NetCDF input file " + fname, __FILE__, __LINE__);
             }
             breadthAtt.getValues(&wd._breadth);                        
 
@@ -288,6 +289,7 @@ ostream& operator<< (ostream& out, NNWeightDescriptor& d)
 NNWeight::NNWeight(NNLayer& inputLayer, NNLayer& outputLayer, bool bShared, bool bTransposed, bool bLocked, NNFloat norm) :
 _inputLayer(inputLayer),
 _outputLayer(outputLayer),
+_dimensionality(2),
 _width(1),
 _height(1),
 _length(1),
@@ -329,7 +331,7 @@ _pbBiasGradientVelocity()
         CUDNNERROR(cudnnStatus, "NNWeight::NNWeight: Unable to create convolution descriptor");
 
 
-        // Set filter dimensions        
+        // Set filter dimensions and the _dimensionality, which the constructor defaults to 2
         vector<int> vFilterDim(5, 1);
         switch (_outputLayer._dimensions)
         {
@@ -337,6 +339,7 @@ _pbBiasGradientVelocity()
                 vFilterDim[0]       = _outputLayer._Ny;
                 vFilterDim[1]       = _inputLayer._Ny;
                 vFilterDim[2]       = _inputLayer._kernelX;
+                _dimensionality = 3;
                 break;
                 
             case 3:
@@ -344,6 +347,7 @@ _pbBiasGradientVelocity()
                 vFilterDim[1]       = _inputLayer._Nz;
                 vFilterDim[2]       = _outputLayer._kernelY;
                 vFilterDim[3]       = _outputLayer._kernelX;
+                _dimensionality = 4;
                 break;   
                          
             case 4:
@@ -352,6 +356,7 @@ _pbBiasGradientVelocity()
                 vFilterDim[2]       = _outputLayer._kernelZ;
                 vFilterDim[3]       = _outputLayer._kernelY;
                 vFilterDim[4]       = _outputLayer._kernelX;
+                _dimensionality = 5;
                 break;  
         }
         cudnnStatus = cudnnSetFilterNdDescriptor(_convFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, _outputLayer._dimensions + 1, vFilterDim.data());
@@ -1035,6 +1040,20 @@ bool NNWeight::GetBiases(vector<NNFloat>& vBias)
         
     }
     return bValid;
+}
+
+bool NNWeight::GetDimensions(vector<uint64_t>& dimensions)
+{
+  if (_dimensionality < 2 || _dimensionality > 5) {
+      printf("NNWeight::GetDimensions: _dimensionality = %u\n", _dimensionality);
+      return false;
+  }
+  if (_dimensionality >= 1) dimensions.push_back(_width);
+  if (_dimensionality >= 2) dimensions.push_back(_height);
+  if (_dimensionality >= 3) dimensions.push_back(_length);
+  if (_dimensionality >= 4) dimensions.push_back(_depth);
+  if (_dimensionality == 5) dimensions.push_back(_breadth);
+  return true;
 }
 
 void NNWeight::Dump(string fname, NNFloat* pBuffer)
